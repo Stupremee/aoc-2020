@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# vim ft=bash
+
+set -e
+
+function run() {
+  PWD=$(dirname "$0")
+
+  program="$1"
+  program_noext=''${program%.*}
+
+  ddlog="$(/run/current-system/sw/bin/nix-build '<nixpkgs>' --no-build-output -A nur.repos.stupremee.ddlog)"
+  cutils="$(/run/current-system/sw/bin/nix-build '<nixpkgs>' --no-build-output -A coreutils)"
+
+  if [ ! -f "$program" ]; then
+    >&2 echo "You are trying to run $program, but it does not exist"
+    return
+  fi
+
+  local input_file="$2"
+  if [ -z "$input_file" ]; then
+    local dat_name="$program_noext.dat"
+    if [ -f "$dat_name" ]; then
+      >&2 echo "Using $dat_name as an input file"
+      input_file="$dat_name"
+    fi
+  fi
+
+  ${ddlog}/bin/ddlog -o "$PWD/generated" -i "$program" -L "${ddlog}/lib" || return
+  (cd "$PWD/generated/${program_noext}_ddlog" && cargo build --release)
+  if [ -z "$input_file" ]; then
+    "$PWD/generated/${program_noext}_ddlog/target/release/$(${cutils}/bin/basename "$program_noext")_cli"
+  else
+    "$PWD/generated/${program_noext}_ddlog/target/release/$(${cutils}/bin/basename "$program_noext")_cli" --no-print < "$input_file"
+  fi
+}
+
+run "$@"

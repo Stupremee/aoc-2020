@@ -1,0 +1,7 @@
+input relation Entry(val: bit<32>)
+
+output relation Solution(value: bit<32>)
+
+Solution(a * b) :-  Entry(a), Entry(b),
+                    a + b == 2020.
+Solution(a * b * c) :- Entry(a), Entry(b), Entry(c), a + b + c == 2020.
