@@ -6,11 +6,14 @@ set -e
 function run() {
   PWD=$(dirname "$0")
 
-  program="$1"
-  program_noext=''${program%.*}
-
   ddlog="$(/run/current-system/sw/bin/nix-build '<nixpkgs>' --no-build-output -A nur.repos.stupremee.ddlog)"
   cutils="$(/run/current-system/sw/bin/nix-build '<nixpkgs>' --no-build-output -A coreutils)"
+
+  program="$1"
+  program_noext=${program%.*}
+
+  name=$(${cutils}/bin/basename "$program")
+  name_noext=${name%.*}
 
   if [ ! -f "$program" ]; then
     >&2 echo "You are trying to run $program, but it does not exist"
@@ -26,12 +29,12 @@ function run() {
     fi
   fi
 
-  ${ddlog}/bin/ddlog -o "$PWD/generated" -i "$program" -L "${ddlog}/lib" || return
-  (cd "$PWD/generated/${program_noext}_ddlog" && cargo build --release)
+  ${ddlog}/bin/ddlog -o "$PWD/generated" -i "$program" -L "${ddlog}/lib" -L "$PWD/lib" || return
+  (cd "$PWD/generated/${name_noext}_ddlog" && cargo build --release)
   if [ -z "$input_file" ]; then
-    "$PWD/generated/${program_noext}_ddlog/target/release/$(${cutils}/bin/basename "$program_noext")_cli"
+    "$PWD/generated/${name_noext}_ddlog/target/release/$(${cutils}/bin/basename "$name_noext")_cli"
   else
-    "$PWD/generated/${program_noext}_ddlog/target/release/$(${cutils}/bin/basename "$program_noext")_cli" --no-print < "$input_file"
+    "$PWD/generated/${name_noext}_ddlog/target/release/$(${cutils}/bin/basename "$name_noext")_cli" --no-print < "$input_file"
   fi
 }
 

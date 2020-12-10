@@ -1,6 +1,0 @@
-input relation Entry(min: bit<32>, max: bit<32>, letter: string, password: string)
-
-output relation Solution(password: string)
-
-Solution(passwd) :-
-  
