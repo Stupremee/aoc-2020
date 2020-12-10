@@ -1,12 +1,20 @@
 import regex
+import inspect_log as log
 
 input relation Entry(min: usize, max: usize, c: string, passwd: string)
 
-output relation Solution(password: string, nonce: usize)
+output relation Solution1(password: string, nonce: usize)
+output relation Solution2(password: string, nonce: usize)
 
-Solution(passwd, nonce) :- Entry(min, max, c, passwd),
+Solution1(passwd, nonce) :- Entry(min, max, c, passwd),
                     var pat = regex(c),
                     var m = regex_all_matches(pat, passwd),
                     var count = vec_len(m),
                     var nonce = min + max,
                     count >= min, count <= max.
+
+Solution2(passwd, nonce) :- Entry(first, second, c, passwd),
+                            var nonce = first + second,
+                            var a = substr(passwd, first - 1, first) == c,
+                            var b = substr(passwd, second - 1, second) == c,
+                            (a and (not b)) or (b and (not a)).

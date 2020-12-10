@@ -1002,5 +1002,3 @@ insert Entry(4, 7, "h", "hhxhzmwhhhh");
 insert Entry(11, 16, "r", "rrrrrrrrrrrrrrrlr");
 
 commit;
-
-dump Solution;
